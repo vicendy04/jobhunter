@@ -26,8 +26,8 @@ public class UserService {
         return user;
     }
 
-    public User handleCreateUser(User user) {
-        return this.userRepository.save(user);
+    public User handleCreateUser(User reqUser) {
+        return this.userRepository.save(reqUser);
     }
 
     public User fetchUserById(Long id) {
