@@ -9,12 +9,13 @@ import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.http.server.ServletServerHttpResponse;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
+import vn.hoidanit.jobhunter.domain.RestResponse;
 
 @ControllerAdvice
 public class FormatRestResponse implements ResponseBodyAdvice<Object> {
     @Override
     public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
-        return false;
+        return true;
     }
 
     @Override
@@ -26,6 +27,26 @@ public class FormatRestResponse implements ResponseBodyAdvice<Object> {
                                   ServerHttpResponse response) {
         HttpServletResponse servletResponse = ((ServletServerHttpResponse) response).getServletResponse();
         int status = servletResponse.getStatus();
-        return body;
+
+        RestResponse<Object> restResponse = new RestResponse<>();
+        restResponse.setStatusCode(status);
+
+//        if (status >= 400) {
+////            error case
+//            restResponse.setError("CALL API FAILED");
+//            restResponse.setMessage(body);
+//        }
+
+        // Nếu mã trạng thái là lỗi (>= 400), không cần định dạng lại
+        if (status >= 400) {
+//            error case
+            return body; // Giữ nguyên phản hồi lỗi từ @ExceptionHandler
+        } else {
+//            success case
+            restResponse.setMessage("CALL API SUCCESS");
+            restResponse.setData(body);
+        }
+
+        return restResponse;
     }
 }
