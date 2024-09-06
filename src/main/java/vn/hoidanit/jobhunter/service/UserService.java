@@ -18,6 +18,11 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    public User handleGetUserByUsername(String username) {
+        return this.userRepository.findByEmail(username);
+
+    }
+
     public User handleUpdateUser(User requestUser) {
         User user = this.fetchUserById(requestUser.getId());
         if (user != null) {
