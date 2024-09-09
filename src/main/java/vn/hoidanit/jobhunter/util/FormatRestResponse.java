@@ -37,6 +37,10 @@ public class FormatRestResponse implements ResponseBodyAdvice<Object> {
 //            restResponse.setMessage(body);
 //        }
 
+//        fix request refresh liên tục từ phía frontend
+        if (body instanceof String) {
+            return body;
+        }
         // Nếu mã trạng thái là lỗi (>= 400), không cần định dạng lại
         if (status >= 400) {
 //            error case

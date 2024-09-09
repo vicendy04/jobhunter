@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import vn.hoidanit.jobhunter.domain.RestResponse;
 
 import java.io.IOException;
+import java.util.Optional;
 
 @Component
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
@@ -30,9 +31,14 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         // Tạo một đối tượng RestResponse để chứa thông tin lỗi
         RestResponse<Object> restResponse = new RestResponse<>();
 
+
         restResponse.setStatusCode(HttpServletResponse.SC_UNAUTHORIZED);
 
-        restResponse.setError(authException.getCause().getMessage());
+        String errorMessage = Optional.ofNullable(authException.getCause())
+                .map(throwable -> throwable.getMessage())
+                .orElse(authException.getMessage()); // If a value is present, returns the value, otherwise returns other.
+
+        restResponse.setError(errorMessage);
         restResponse.setMessage("Token không hợp lệ");
 
 //        response.getWriter().write(mapper.writeValueAsString(restResponse));
