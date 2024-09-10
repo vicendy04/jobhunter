@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import vn.hoidanit.jobhunter.domain.Company;
 import vn.hoidanit.jobhunter.repository.CompanyRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -23,9 +24,18 @@ public class CompanyService {
         return this.companyRepository.save(reqCompany);
     }
 
+    public List<Company> fetchAllCompanies() {
+        return this.companyRepository.findAll();
+    }
+
+    public void handleDeleteCompany(Long id) {
+        this.companyRepository.deleteById(id);
+    }
+
     public Company handleUpdateCompany(Company requestCompany) {
-        Company company = this.fetchCompanyById(requestCompany.getId());
-        if (company != null) {
+        Optional<Company> optionalCompany = this.companyRepository.findById(requestCompany.getId());
+        if (optionalCompany.isPresent()) {
+            Company company = optionalCompany.get();
 //            "name": "hoidanit's company",
 //            "description": "my first company",
 //            "address": "hanoi",
@@ -35,8 +45,9 @@ public class CompanyService {
             company.setAddress(requestCompany.getAddress());
             company.setLogo(requestCompany.getLogo());
             company = this.companyRepository.save(company);
+            return company;
         }
-        return company;
+        return null;
     }
 
 }

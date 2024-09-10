@@ -1,13 +1,14 @@
 package vn.hoidanit.jobhunter.controller;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.hoidanit.jobhunter.domain.User;
+import vn.hoidanit.jobhunter.domain.dto.PaginatedResultDTO;
 import vn.hoidanit.jobhunter.service.UserService;
+import vn.hoidanit.jobhunter.util.PaginationHandler;
 import vn.hoidanit.jobhunter.util.error.IdInvalidException;
-
-import java.util.List;
 
 @RestController
 public class UserController {
@@ -24,8 +25,12 @@ public class UserController {
     }
 
     @GetMapping("/users")
-    public ResponseEntity<List<User>> getUsers() {
-        List<User> users = this.userService.fetchAllUsers();
+    public ResponseEntity<PaginatedResultDTO> getUsers(
+            @RequestParam(value = "current", defaultValue = "1") int current,
+            @RequestParam(value = "pageSize", defaultValue = "5") int pageSize) {
+        Pageable pageable = PaginationHandler.getPageableObject(current, pageSize);
+
+        var users = this.userService.fetchAllUsers(pageable);
         return ResponseEntity.status(HttpStatus.OK).body(users);
     }
 

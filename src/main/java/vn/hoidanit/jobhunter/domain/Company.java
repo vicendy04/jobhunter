@@ -40,4 +40,11 @@ public class Company {
         this.setCreatedBy(emailCurrentUser);
         this.setCreatedAt(Instant.now());
     }
+    @PreUpdate
+    public void handleBeforeUpdate(){
+        Optional<String> currentUserLogin = SecurityUtil.getCurrentUserLogin();
+        String emailCurrentUser = currentUserLogin.orElse("");
+        this.setUpdatedBy(emailCurrentUser);
+        this.setUpdatedAt(Instant.now());
+    }
 }
