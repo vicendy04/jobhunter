@@ -2,6 +2,7 @@ package vn.hoidanit.jobhunter.service;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import vn.hoidanit.jobhunter.domain.User;
@@ -9,6 +10,7 @@ import vn.hoidanit.jobhunter.domain.dto.Meta;
 import vn.hoidanit.jobhunter.domain.dto.PaginatedResultDTO;
 import vn.hoidanit.jobhunter.repository.UserRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -51,11 +53,11 @@ public class UserService {
         this.userRepository.deleteById(id);
     }
 
-    public PaginatedResultDTO fetchAllUsers(Pageable pageable) {
-        Page<User> userPage = this.userRepository.findAll(pageable);
+    public PaginatedResultDTO fetchAllUsers(Specification<User> spec, Pageable pageable) {
+        Page<User> userPage = this.userRepository.findAll(spec, pageable);
 
         Meta meta = new Meta();
-        meta.setPage(userPage.getTotalPages());
+        meta.setPage(userPage.getNumber() + 1);
         meta.setPageSize(userPage.getSize());
         meta.setPages(userPage.getTotalPages());
         meta.setTotal(userPage.getTotalElements());
@@ -63,6 +65,7 @@ public class UserService {
         PaginatedResultDTO paginatedResultDTO = new PaginatedResultDTO();
         paginatedResultDTO.setMeta(meta);
         paginatedResultDTO.setResult(userPage.getContent());
+//        paginatedResultDTO.setResult(userPage);
 
         return paginatedResultDTO;
     }
