@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import vn.hoidanit.jobhunter.domain.Company;
 import vn.hoidanit.jobhunter.domain.dto.PaginatedResultDTO;
 import vn.hoidanit.jobhunter.service.CompanyService;
+import vn.hoidanit.jobhunter.util.annotation.ApiMessage;
 
 
 @RestController
@@ -33,6 +34,7 @@ public class CompanyController {
     }
 
     @GetMapping("/companies")
+    @ApiMessage(value = "fetch companies")
     public ResponseEntity<PaginatedResultDTO> getCompanies(
             @Filter Specification<Company> spec,
             Pageable pageable

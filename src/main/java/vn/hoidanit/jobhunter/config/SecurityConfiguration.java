@@ -39,6 +39,37 @@ public class SecurityConfiguration {
     }
 
     @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+//         @formatter:off
+        http
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(Customizer.withDefaults())
+                .authorizeHttpRequests(authz ->
+                        authz.requestMatchers(
+                                        "/", "/api/v1/login"
+                                ).permitAll()
+//                                .anyRequest().permitAll())
+                                .anyRequest().authenticated())
+
+//        Spring Security deprecated the methods that return its own configurer in favor of the ones that return HttpSecurity
+//                .oauth2ResourceServer(oauth2 -> oauth2.jwt())
+//                .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults())) // a shortcut for the lambda expression it → {}
+//                .oauth2ResourceServer(h -> h.jwt(jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(null))))
+//                cung cấp cách để spring giải mã
+//        https://docs.spring.io/spring-security/site/docs/current/api/org/springframework/security/config/annotation/web/configurers/oauth2/server/resource/OAuth2ResourceServerConfigurer.html
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwtConfigurer -> jwtConfigurer.decoder(jwtDecoder()))
+                        .authenticationEntryPoint(jwtAuthenticationEntryPoint))
+
+//                .exceptionHandling(
+//                        exceptions -> exceptions
+//                                .authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint()) //401
+//                                .accessDeniedHandler(new BearerTokenAccessDeniedHandler())) //403
+
+                .formLogin(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        return http.build();
+    }
+    @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
@@ -70,36 +101,5 @@ public class SecurityConfiguration {
         return jwtAuthenticationConverter;
     }
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//         @formatter:off
-        http
-                .csrf(AbstractHttpConfigurer::disable)
-                .cors(Customizer.withDefaults())
-                .authorizeHttpRequests(authz ->
-                        authz.requestMatchers(
-                                        "/", "/login"
-                                ).permitAll()
-//                                .anyRequest().permitAll())
-                                .anyRequest().authenticated())
-
-//        Spring Security deprecated the methods that return its own configurer in favor of the ones that return HttpSecurity
-//                .oauth2ResourceServer(oauth2 -> oauth2.jwt())
-//                .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults())) // a shortcut for the lambda expression it → {}
-//                .oauth2ResourceServer(h -> h.jwt(jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(null))))
-//                cung cấp cách để spring giải mã
-//        https://docs.spring.io/spring-security/site/docs/current/api/org/springframework/security/config/annotation/web/configurers/oauth2/server/resource/OAuth2ResourceServerConfigurer.html
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwtConfigurer -> jwtConfigurer.decoder(jwtDecoder()))
-                        .authenticationEntryPoint(jwtAuthenticationEntryPoint))
-
-//                .exceptionHandling(
-//                        exceptions -> exceptions
-//                                .authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint()) //401
-//                                .accessDeniedHandler(new BearerTokenAccessDeniedHandler())) //403
-
-                .formLogin(AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-        return http.build();
-    }
 
 }
