@@ -7,6 +7,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 import vn.hoidanit.jobhunter.domain.RestResponse;
 
 import java.util.List;
@@ -14,15 +15,22 @@ import java.util.List;
 //chỉ nhận lỗi ở tầng controller
 @RestControllerAdvice
 public class GlobalException {
-    @ExceptionHandler(value = {
-            UsernameNotFoundException.class,
-            BadCredentialsException.class
-    })
+    @ExceptionHandler(value = {UsernameNotFoundException.class, BadCredentialsException.class, IdInvalidException.class})
     public ResponseEntity<RestResponse<Object>> handleIdException(Exception exception) {
         RestResponse<Object> restResponse = new RestResponse<>();
         restResponse.setStatusCode(HttpStatus.BAD_REQUEST.value());
         restResponse.setError(exception.getMessage());
         restResponse.setMessage("CALL API FAILED");
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(restResponse);
+    }
+
+    @ExceptionHandler(value = NoResourceFoundException.class)
+    public ResponseEntity<RestResponse<Object>> handleNotFoundException(NoResourceFoundException exception) {
+        RestResponse<Object> restResponse = new RestResponse<>();
+        restResponse.setStatusCode(HttpStatus.NOT_FOUND.value());
+        restResponse.setError(exception.getMessage());
+        restResponse.setMessage("404 Not Found. URL may not exist...");
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(restResponse);
     }
@@ -34,8 +42,7 @@ public class GlobalException {
         restResponse.setError("CALL API FAILED");
 
 //        restResponse.setMessage(exception.getFieldError().getDefaultMessage());
-        List<String> errorMessages = exception.getFieldErrors().stream()
-                .map(fieldError -> fieldError.getDefaultMessage()).toList();
+        List<String> errorMessages = exception.getFieldErrors().stream().map(fieldError -> fieldError.getDefaultMessage()).toList();
         restResponse.setData(errorMessages);
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(restResponse);

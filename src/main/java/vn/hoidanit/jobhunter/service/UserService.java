@@ -6,9 +6,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import vn.hoidanit.jobhunter.domain.User;
-import vn.hoidanit.jobhunter.domain.dto.Meta;
-import vn.hoidanit.jobhunter.domain.dto.PaginatedResultDTO;
+import vn.hoidanit.jobhunter.domain.dto.*;
 import vn.hoidanit.jobhunter.repository.UserRepository;
+import vn.hoidanit.jobhunter.util.error.IdInvalidException;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,29 +28,96 @@ public class UserService {
 
     }
 
-    public User handleUpdateUser(User requestUser) {
-        User user = this.fetchUserById(requestUser.getId());
-        if (user != null) {
-            user.setName(requestUser.getName());
-            user.setEmail(requestUser.getEmail());
-            user.setPassword(requestUser.getPassword());
-            user = this.userRepository.save(user);
+    public UserUpdateResponse handleUpdateUser(User requestUser) throws IdInvalidException {
+        User existingUser = this.fetchUserById(requestUser.getId())
+                .orElseThrow(() -> new IdInvalidException("User với id " + requestUser.getId() + " không tồn tại"));
+        // update
+        existingUser.setName(requestUser.getName());
+        existingUser.setGender(requestUser.getGender());
+        existingUser.setAddress(requestUser.getAddress());
+        existingUser.setAge(requestUser.getAge());
+        existingUser = this.userRepository.save(existingUser);
+
+        return this.convertToUserUpdateResponse(existingUser);
+    }
+
+    public UserCreateResponse handleCreateUser(User reqUser) throws IdInvalidException {
+        if (this.userRepository.existsByEmail(reqUser.getEmail())) {
+            throw new IdInvalidException("Email đã tồn tai");
         }
-        return user;
-    }
-
-    public User handleCreateUser(User reqUser) {
         reqUser.setPassword(passwordEncoder.encode(reqUser.getPassword()));
-        return this.userRepository.save(reqUser);
+        User user = this.userRepository.save(reqUser);
+        return this.convertToUserCreateResponse(user);
     }
 
-    public User fetchUserById(Long id) {
-        Optional<User> userOptional = this.userRepository.findById(id);
-        return userOptional.orElse(null);
+    public UserCreateResponse convertToUserCreateResponse(User user) {
+        UserCreateResponse dto = new UserCreateResponse();
+        dto.setId(user.getId());
+        dto.setEmail(user.getEmail());
+        dto.setName(user.getName());
+        dto.setAge(user.getAge());
+        dto.setCreatedAt(user.getCreatedAt());
+        dto.setGender(user.getGender());
+        dto.setAddress(user.getAddress());
+        return dto;
     }
 
-    public void handleDeleteUser(Long id) {
-        this.userRepository.deleteById(id);
+    public UserUpdateResponse convertToUserUpdateResponse(User user) {
+        UserUpdateResponse dto = new UserUpdateResponse();
+        dto.setId(user.getId());
+        dto.setName(user.getName());
+        dto.setAge(user.getAge());
+        dto.setUpdatedAt(user.getUpdatedAt());
+        dto.setGender(user.getGender());
+        dto.setAddress(user.getAddress());
+        return dto;
+    }
+
+    public UserResponse convertToUserResponse(User user) {
+        UserResponse dto = new UserResponse();
+        dto.setId(user.getId());
+        dto.setEmail(user.getEmail());
+        dto.setName(user.getName());
+        dto.setAge(user.getAge());
+        dto.setUpdatedAt(user.getUpdatedAt());
+        dto.setCreatedAt(user.getCreatedAt());
+        dto.setGender(user.getGender());
+        dto.setAddress(user.getAddress());
+        return dto;
+    }
+//    public User fetchUserById(Long id) {
+//        Optional<User> userOptional = this.userRepository.findById(id);
+//        return userOptional.orElse(null);
+//    }
+
+    public Optional<User> fetchUserById(Long id) {
+        return this.userRepository.findById(id);
+    }
+
+    public boolean isUserExisted(Long id) {
+        return this.userRepository.existsById(id);
+    }
+
+    public UserResponse handleGetUser(Long id) throws IdInvalidException {
+        Optional<User> userOptional = this.fetchUserById(id);
+
+//        if (userOptional.isEmpty()) {
+//            throw new IdInvalidException("User với id = " + id + " không tồn tai");
+//        } else {
+//            return this.convertToResCreateUserDTO(userOptional.get());
+//        }
+
+        return userOptional
+                .map(this::convertToUserResponse)
+                .orElseThrow(() -> new IdInvalidException("User với id = " + id + " không tồn tại"));
+    }
+
+    public void handleDeleteUser(Long id) throws IdInvalidException {
+        if (isUserExisted(id)) {
+            this.userRepository.deleteById(id);
+        } else {
+            throw new IdInvalidException("User với id = " + id + " không tồn tại");
+        }
     }
 
     public PaginatedResultDTO fetchAllUsers(Specification<User> spec, Pageable pageable) {
@@ -62,9 +129,21 @@ public class UserService {
         meta.setPages(userPage.getTotalPages());
         meta.setTotal(userPage.getTotalElements());
 
+        List<UserResponse> userResponseDTOS = userPage.getContent()
+                .stream().map(user -> new UserResponse(
+                        user.getId(),
+                        user.getEmail(),
+                        user.getName(),
+                        user.getGender(),
+                        user.getAddress(),
+                        user.getAge(),
+                        user.getCreatedAt(),
+                        user.getUpdatedAt()
+                )).toList();
+
         PaginatedResultDTO paginatedResultDTO = new PaginatedResultDTO();
         paginatedResultDTO.setMeta(meta);
-        paginatedResultDTO.setResult(userPage.getContent());
+        paginatedResultDTO.setResult(userResponseDTOS);
 //        paginatedResultDTO.setResult(userPage);
 
         return paginatedResultDTO;
