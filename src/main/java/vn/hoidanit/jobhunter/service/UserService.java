@@ -23,14 +23,14 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
+
     public User handleGetUserByUsername(String username) {
         return this.userRepository.findByEmail(username);
 
     }
 
     public UserUpdateResponse handleUpdateUser(User requestUser) throws IdInvalidException {
-        User existingUser = this.fetchUserById(requestUser.getId())
-                .orElseThrow(() -> new IdInvalidException("User với id " + requestUser.getId() + " không tồn tại"));
+        User existingUser = this.fetchUserById(requestUser.getId()).orElseThrow(() -> new IdInvalidException("User với id " + requestUser.getId() + " không tồn tại"));
         // update
         existingUser.setName(requestUser.getName());
         existingUser.setGender(requestUser.getGender());
@@ -85,42 +85,28 @@ public class UserService {
         dto.setAddress(user.getAddress());
         return dto;
     }
-//    public User fetchUserById(Long id) {
-//        Optional<User> userOptional = this.userRepository.findById(id);
-//        return userOptional.orElse(null);
-//    }
 
-    public Optional<User> fetchUserById(Long id) {
-        return this.userRepository.findById(id);
-    }
 
-    public boolean isUserExisted(Long id) {
-        return this.userRepository.existsById(id);
-    }
-
-    public UserResponse handleGetUser(Long id) throws IdInvalidException {
-        Optional<User> userOptional = this.fetchUserById(id);
-
+    public UserResponse handleGetUserById(Long id) throws IdInvalidException {
+//        Optional<User> userOptional = this.fetchUserById(id);
 //        if (userOptional.isEmpty()) {
 //            throw new IdInvalidException("User với id = " + id + " không tồn tai");
 //        } else {
 //            return this.convertToResCreateUserDTO(userOptional.get());
 //        }
-
-        return userOptional
-                .map(this::convertToUserResponse)
-                .orElseThrow(() -> new IdInvalidException("User với id = " + id + " không tồn tại"));
+        User user = fetchUserById(id).orElseThrow(() -> new IdInvalidException("User with id " + id + " does not exist"));
+        return convertToUserResponse(user);
     }
 
     public void handleDeleteUser(Long id) throws IdInvalidException {
-        if (isUserExisted(id)) {
+        if (this.userRepository.existsById(id)) {
             this.userRepository.deleteById(id);
         } else {
             throw new IdInvalidException("User với id = " + id + " không tồn tại");
         }
     }
 
-    public PaginatedResultDTO fetchAllUsers(Specification<User> spec, Pageable pageable) {
+    public PaginatedResultDTO handleGetAllUsers(Specification<User> spec, Pageable pageable) {
         Page<User> userPage = this.userRepository.findAll(spec, pageable);
 
         Meta meta = new Meta();
@@ -130,22 +116,22 @@ public class UserService {
         meta.setTotal(userPage.getTotalElements());
 
         List<UserResponse> userResponseDTOS = userPage.getContent()
-                .stream().map(user -> new UserResponse(
-                        user.getId(),
-                        user.getEmail(),
-                        user.getName(),
-                        user.getGender(),
-                        user.getAddress(),
-                        user.getAge(),
-                        user.getCreatedAt(),
-                        user.getUpdatedAt()
-                )).toList();
+                .stream().map(this::convertToUserResponse
+                ).toList();
 
         PaginatedResultDTO paginatedResultDTO = new PaginatedResultDTO();
         paginatedResultDTO.setMeta(meta);
         paginatedResultDTO.setResult(userResponseDTOS);
-//        paginatedResultDTO.setResult(userPage);
 
         return paginatedResultDTO;
+    }
+
+//    public User fetchUserById(Long id) {
+//        Optional<User> userOptional = this.userRepository.findById(id);
+//        return userOptional.orElse(null);
+//    }
+
+    private Optional<User> fetchUserById(Long id) {
+        return this.userRepository.findById(id);
     }
 }

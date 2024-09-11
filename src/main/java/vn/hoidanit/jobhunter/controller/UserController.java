@@ -27,9 +27,9 @@ public class UserController {
 
 
     @GetMapping("/users/{id}")
-    @ApiMessage(value = "fetch user by id")
-    public ResponseEntity<UserResponse> getUser(@PathVariable("id") Long id) throws IdInvalidException {
-        UserResponse user = this.userService.handleGetUser(id);
+    @ApiMessage(value = "Fetch user by ID")
+    public ResponseEntity<UserResponse> getUserById(@PathVariable("id") Long id) throws IdInvalidException {
+        UserResponse user = this.userService.handleGetUserById(id);
 
 //        if (userOptional.isPresent()) {
 //            return ResponseEntity.ok(userOptional.get());
@@ -45,18 +45,12 @@ public class UserController {
     }
 
     @GetMapping("/users")
-    @ApiMessage(value = "fetch all users")
-    public ResponseEntity<PaginatedResultDTO> getUsers(
-            @Filter Specification<User> spec,
-            Pageable pageable
-//            @RequestParam(value = "current", defaultValue = "1") int current,
-//            @RequestParam(value = "pageSize", defaultValue = "5") int pageSize
-    ) {
+    @ApiMessage(value = "Fetch all users with pagination")
+    public ResponseEntity<PaginatedResultDTO> getAllUsers(@Filter Specification<User> spec, Pageable pageable) {
 //        Pageable pageable = PaginationHandler.getPageableObject(current, pageSize);
-
 //        var users = this.userService.fetchAllUsers(pageable);
-        var users = this.userService.fetchAllUsers(spec, pageable);
-        return ResponseEntity.status(HttpStatus.OK).body(users);
+        PaginatedResultDTO users = this.userService.handleGetAllUsers(spec, pageable);
+        return ResponseEntity.ok(users);
     }
 
     @PostMapping("/users")
@@ -67,14 +61,14 @@ public class UserController {
     }
 
     @PutMapping("/users")
-    @ApiMessage(value = "update a user")
+    @ApiMessage(value = "Update an existing user")
     public ResponseEntity<UserUpdateResponse> updateUser(@RequestBody User reqUser) throws IdInvalidException {
         UserUpdateResponse updatedUser = this.userService.handleUpdateUser(reqUser);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(updatedUser);
     }
 
     @DeleteMapping("/users/{id}")
-    @ApiMessage(value = "Delete a user")
+    @ApiMessage(value = "Delete a user by ID")
     public ResponseEntity<Void> deleteUser(@PathVariable("id") Long id) throws IdInvalidException {
         this.userService.handleDeleteUser(id);
         return ResponseEntity.noContent().build();
