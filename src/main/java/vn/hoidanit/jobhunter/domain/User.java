@@ -31,6 +31,7 @@ public class User {
     private GenderEnum gender;
 
     private String address;
+    @Column(columnDefinition = "TEXT")
     private String refreshToken;
     private Instant createdAt;
     private Instant updatedAt;
