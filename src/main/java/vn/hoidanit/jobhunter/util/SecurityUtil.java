@@ -1,5 +1,6 @@
 package vn.hoidanit.jobhunter.util;
 
+import com.nimbusds.jose.util.Base64;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -10,8 +11,12 @@ import org.springframework.security.oauth2.jwt.*;
 import org.springframework.stereotype.Service;
 import vn.hoidanit.jobhunter.domain.dto.ResLoginDTO;
 
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -22,22 +27,29 @@ public class SecurityUtil {
     private long refreshTokenExpiration;
     public static final MacAlgorithm JWT_ALGORITHM = MacAlgorithm.HS512;
     private final JwtEncoder jwtEncoder;
+//    private final JwtDecoder jwtDecoder;
 
-    public SecurityUtil(JwtEncoder jwtEncoder) {
+
+    public SecurityUtil(JwtEncoder jwtEncoder, JwtDecoder jwtDecoder) {
         this.jwtEncoder = jwtEncoder;
+//        this.jwtDecoder = jwtDecoder;
     }
 
-    public String generateAccessToken(Authentication authentication) {
+    public String generateAccessToken(String email, ResLoginDTO.UserLogin dto) {
         Instant now = Instant.now();
-//        laggggg
         Instant validity = now.plus(this.accessTokenExpiration, ChronoUnit.SECONDS);
+
+        List<String> authorityList = new ArrayList<>();
+        authorityList.add("ROLE_USER_CREATE");
+        authorityList.add("ROLE_USER_UPDATE");
 
 //         @formatter:off
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuedAt(now)
                 .expiresAt(validity)
-                .subject(authentication.getName())
-                .claim("hoangtran", authentication)
+                .subject(email)
+                .claim("hoangtran", dto)
+                .claim("permission", authorityList)
                 .build();
         JwsHeader jwsHeader = JwsHeader.with(JWT_ALGORITHM).build();
         return this.jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader,
@@ -80,6 +92,25 @@ public class SecurityUtil {
             return s;
         }
         return null;
+    }
+    @Value("${hoidanit.jwt.base64-secret}")
+    private String jwtKey;
+
+    private SecretKey getSecretKey() {
+        byte[] keyBytes = Base64.from(jwtKey).decode();
+        return new SecretKeySpec(keyBytes, 0, keyBytes.length, JWT_ALGORITHM.getName());
+    }
+
+    public Jwt checkValidRefreshToken(String refreshToken) {
+        NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withSecretKey(getSecretKey())
+                .macAlgorithm(JWT_ALGORITHM).build();
+        try {
+            return jwtDecoder.decode(refreshToken);
+        }
+        catch (Exception e){
+            System.out.println(">>> Refresh Token error: " + e.getMessage());
+            throw e;
+        }
     }
 
     /**
