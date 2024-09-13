@@ -27,12 +27,10 @@ public class SecurityUtil {
     private long refreshTokenExpiration;
     public static final MacAlgorithm JWT_ALGORITHM = MacAlgorithm.HS512;
     private final JwtEncoder jwtEncoder;
-//    private final JwtDecoder jwtDecoder;
 
 
-    public SecurityUtil(JwtEncoder jwtEncoder, JwtDecoder jwtDecoder) {
+    public SecurityUtil(JwtEncoder jwtEncoder) {
         this.jwtEncoder = jwtEncoder;
-//        this.jwtDecoder = jwtDecoder;
     }
 
     public String generateAccessToken(String email, ResLoginDTO.UserLogin dto) {
@@ -57,7 +55,7 @@ public class SecurityUtil {
     }
     public String generateRefreshToken(String email, ResLoginDTO dto ) {
         Instant now = Instant.now();
-        Instant validity = now.plus(this.accessTokenExpiration, ChronoUnit.SECONDS);
+        Instant validity = now.plus(this.refreshTokenExpiration, ChronoUnit.SECONDS);
 
 //         @formatter:off
         JwtClaimsSet claims = JwtClaimsSet.builder()

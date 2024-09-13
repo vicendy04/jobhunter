@@ -1,5 +1,6 @@
 package vn.hoidanit.jobhunter.util.error;
 
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -42,7 +43,10 @@ public class GlobalException {
         restResponse.setError("CALL API FAILED");
 
 //        restResponse.setMessage(exception.getFieldError().getDefaultMessage());
-        List<String> errorMessages = exception.getFieldErrors().stream().map(fieldError -> fieldError.getDefaultMessage()).toList();
+        List<String> errorMessages = exception.getFieldErrors()
+                .stream()
+                .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                .toList();
         restResponse.setData(errorMessages);
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(restResponse);

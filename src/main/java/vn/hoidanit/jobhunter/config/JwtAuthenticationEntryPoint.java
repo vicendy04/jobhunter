@@ -35,7 +35,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         restResponse.setStatusCode(HttpServletResponse.SC_UNAUTHORIZED);
 
         String errorMessage = Optional.ofNullable(authException.getCause())
-                .map(throwable -> throwable.getMessage())
+                .map(Throwable::getMessage)
                 .orElse(authException.getMessage()); // If a value is present, returns the value, otherwise returns other.
 
         restResponse.setError(errorMessage);

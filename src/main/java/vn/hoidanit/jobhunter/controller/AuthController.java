@@ -77,7 +77,7 @@ public class AuthController {
     @GetMapping("/auth/account")
     @ApiMessage(value = "Fetch account")
     public ResponseEntity<ResLoginDTO.UserGetAccount> getAccount() {
-        String email = SecurityUtil.getCurrentUserLogin().orElseGet(() -> "");
+        String email = SecurityUtil.getCurrentUserLogin().orElse("");
         User currentUser = this.userService.handleGetUserByUsername(email);
         ResLoginDTO.UserLogin userLogin = new ResLoginDTO.UserLogin();
         ResLoginDTO.UserGetAccount userGetAccount = new ResLoginDTO.UserGetAccount();
@@ -138,7 +138,7 @@ public class AuthController {
     @PostMapping("/auth/logout")
     @ApiMessage("Logout User")
     public ResponseEntity<Void> logout() throws IdInvalidException {
-        String email = SecurityUtil.getCurrentUserLogin().orElseGet(() -> "");
+        String email = SecurityUtil.getCurrentUserLogin().orElse("");
         if (email.equals("")) {
             throw new IdInvalidException("Access Token không hợp lệ");
         }
