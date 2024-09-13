@@ -9,9 +9,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.hoidanit.jobhunter.domain.User;
 import vn.hoidanit.jobhunter.domain.dto.PaginatedResultDTO;
-import vn.hoidanit.jobhunter.domain.dto.UserCreateResponse;
-import vn.hoidanit.jobhunter.domain.dto.UserResponse;
-import vn.hoidanit.jobhunter.domain.dto.UserUpdateResponse;
+import vn.hoidanit.jobhunter.domain.dto.ResCreateUserDTO;
+import vn.hoidanit.jobhunter.domain.dto.ResUpdateUserDTO;
+import vn.hoidanit.jobhunter.domain.dto.ResUserDTO;
 import vn.hoidanit.jobhunter.service.UserService;
 import vn.hoidanit.jobhunter.util.annotation.ApiMessage;
 import vn.hoidanit.jobhunter.util.error.IdInvalidException;
@@ -28,8 +28,8 @@ public class UserController {
 
     @GetMapping("/users/{id}")
     @ApiMessage(value = "Fetch user by ID")
-    public ResponseEntity<UserResponse> getUserById(@PathVariable("id") Long id) throws IdInvalidException {
-        UserResponse user = this.userService.handleGetUserById(id);
+    public ResponseEntity<ResUserDTO> getUserById(@PathVariable("id") Long id) throws IdInvalidException {
+        ResUserDTO user = this.userService.handleGetUserById(id);
 
 //        if (userOptional.isPresent()) {
 //            return ResponseEntity.ok(userOptional.get());
@@ -55,15 +55,15 @@ public class UserController {
 
     @PostMapping("/users")
     @ApiMessage(value = "Create a new user")
-    public ResponseEntity<UserCreateResponse> createNewUser(@Valid @RequestBody User reqUser) throws IdInvalidException {
-        UserCreateResponse createdUser = this.userService.handleCreateUser(reqUser);
+    public ResponseEntity<ResCreateUserDTO> createNewUser(@Valid @RequestBody User reqUser) throws IdInvalidException {
+        ResCreateUserDTO createdUser = this.userService.handleCreateUser(reqUser);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
 
     @PutMapping("/users")
     @ApiMessage(value = "Update an existing user")
-    public ResponseEntity<UserUpdateResponse> updateUser(@RequestBody User reqUser) throws IdInvalidException {
-        UserUpdateResponse updatedUser = this.userService.handleUpdateUser(reqUser);
+    public ResponseEntity<ResUpdateUserDTO> updateUser(@RequestBody User reqUser) throws IdInvalidException {
+        ResUpdateUserDTO updatedUser = this.userService.handleUpdateUser(reqUser);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(updatedUser);
     }
 

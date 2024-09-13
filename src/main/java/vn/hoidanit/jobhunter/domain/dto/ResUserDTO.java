@@ -12,7 +12,7 @@ import java.time.Instant;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserResponse {
+public class ResUserDTO {
     private Long id;
     private String email;
     private String name;

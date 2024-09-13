@@ -6,7 +6,10 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import vn.hoidanit.jobhunter.domain.User;
-import vn.hoidanit.jobhunter.domain.dto.*;
+import vn.hoidanit.jobhunter.domain.dto.PaginatedResultDTO;
+import vn.hoidanit.jobhunter.domain.dto.ResCreateUserDTO;
+import vn.hoidanit.jobhunter.domain.dto.ResUpdateUserDTO;
+import vn.hoidanit.jobhunter.domain.dto.ResUserDTO;
 import vn.hoidanit.jobhunter.repository.UserRepository;
 import vn.hoidanit.jobhunter.util.error.IdInvalidException;
 
@@ -29,7 +32,7 @@ public class UserService {
 
     }
 
-    public UserUpdateResponse handleUpdateUser(User requestUser) throws IdInvalidException {
+    public ResUpdateUserDTO handleUpdateUser(User requestUser) throws IdInvalidException {
         User existingUser = this.fetchUserById(requestUser.getId()).orElseThrow(() -> new IdInvalidException("User với id " + requestUser.getId() + " không tồn tại"));
         // update
         existingUser.setName(requestUser.getName());
@@ -41,7 +44,7 @@ public class UserService {
         return this.convertToUserUpdateResponse(existingUser);
     }
 
-    public UserCreateResponse handleCreateUser(User reqUser) throws IdInvalidException {
+    public ResCreateUserDTO handleCreateUser(User reqUser) throws IdInvalidException {
         if (this.userRepository.existsByEmail(reqUser.getEmail())) {
             throw new IdInvalidException("Email đã tồn tai");
         }
@@ -50,8 +53,8 @@ public class UserService {
         return this.convertToUserCreateResponse(user);
     }
 
-    public UserCreateResponse convertToUserCreateResponse(User user) {
-        UserCreateResponse dto = new UserCreateResponse();
+    public ResCreateUserDTO convertToUserCreateResponse(User user) {
+        ResCreateUserDTO dto = new ResCreateUserDTO();
         dto.setId(user.getId());
         dto.setEmail(user.getEmail());
         dto.setName(user.getName());
@@ -62,8 +65,8 @@ public class UserService {
         return dto;
     }
 
-    public UserUpdateResponse convertToUserUpdateResponse(User user) {
-        UserUpdateResponse dto = new UserUpdateResponse();
+    public ResUpdateUserDTO convertToUserUpdateResponse(User user) {
+        ResUpdateUserDTO dto = new ResUpdateUserDTO();
         dto.setId(user.getId());
         dto.setName(user.getName());
         dto.setAge(user.getAge());
@@ -73,8 +76,8 @@ public class UserService {
         return dto;
     }
 
-    public UserResponse convertToUserResponse(User user) {
-        UserResponse dto = new UserResponse();
+    public ResUserDTO convertToUserResponse(User user) {
+        ResUserDTO dto = new ResUserDTO();
         dto.setId(user.getId());
         dto.setEmail(user.getEmail());
         dto.setName(user.getName());
@@ -91,7 +94,7 @@ public class UserService {
         return this.userRepository.findByRefreshTokenAndEmail(token, email);
     }
 
-    public UserResponse handleGetUserById(Long id) throws IdInvalidException {
+    public ResUserDTO handleGetUserById(Long id) throws IdInvalidException {
 //        Optional<User> userOptional = this.fetchUserById(id);
 //        if (userOptional.isEmpty()) {
 //            throw new IdInvalidException("User với id = " + id + " không tồn tai");
@@ -113,19 +116,19 @@ public class UserService {
     public PaginatedResultDTO handleGetAllUsers(Specification<User> spec, Pageable pageable) {
         Page<User> userPage = this.userRepository.findAll(spec, pageable);
 
-        Meta meta = new Meta();
+        PaginatedResultDTO.Meta meta = new PaginatedResultDTO.Meta();
         meta.setPage(userPage.getNumber() + 1);
         meta.setPageSize(userPage.getSize());
         meta.setPages(userPage.getTotalPages());
         meta.setTotal(userPage.getTotalElements());
 
-        List<UserResponse> userResponseDTOS = userPage.getContent()
+        List<ResUserDTO> resUserDTODTOS = userPage.getContent()
                 .stream().map(this::convertToUserResponse
                 ).toList();
 
         PaginatedResultDTO paginatedResultDTO = new PaginatedResultDTO();
         paginatedResultDTO.setMeta(meta);
-        paginatedResultDTO.setResult(userResponseDTOS);
+        paginatedResultDTO.setResult(resUserDTODTOS);
 
         return paginatedResultDTO;
     }

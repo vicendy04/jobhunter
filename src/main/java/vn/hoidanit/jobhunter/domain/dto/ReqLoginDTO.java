@@ -2,7 +2,7 @@ package vn.hoidanit.jobhunter.domain.dto;
 
 import jakarta.validation.constraints.NotBlank;
 
-public class LoginDTO {
+public class ReqLoginDTO {
     @NotBlank(message = "username không được bỏ trống")
     private String username;
     @NotBlank(message = "password không được bỏ trống")
