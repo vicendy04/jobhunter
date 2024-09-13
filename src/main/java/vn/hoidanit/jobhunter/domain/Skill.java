@@ -12,36 +12,28 @@ import java.util.List;
 import java.util.Optional;
 
 @Entity
-@Table(name = "companies")
+@Table(name = "skills")
 @Getter
 @Setter
-// không thích generate toString constructor
-//@Data
-public class Company {
+public class Skill {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    @NotBlank(message = "name không được bỏ trống")
+
+    @NotBlank(message = "name không được để trống")
     private String name;
-    @Column(columnDefinition = "TEXT")
-    private String description;
-    private String address;
-    private String logo;
+
     private Instant createdAt;
     private Instant updatedAt;
     private String createdBy;
     private String updatedBy;
-    @JsonIgnore
-    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
-    List<User> users;
 
+    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "skills")
     @JsonIgnore
-    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
-    List<Job> jobs;
+    private List<Job> jobs;
 
     @PrePersist
     public void handleBeforeCreate() {
-//        this.setCreatedBy("hoangtran");
         Optional<String> currentUserLogin = SecurityUtil.getCurrentUserLogin();
         String emailCurrentUser = currentUserLogin.orElse("");
         this.setCreatedBy(emailCurrentUser);

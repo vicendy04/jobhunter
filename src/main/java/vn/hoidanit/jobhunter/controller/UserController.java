@@ -31,12 +31,6 @@ public class UserController {
     public ResponseEntity<ResUserDTO> getUserById(@PathVariable("id") Long id) throws IdInvalidException {
         ResUserDTO user = this.userService.handleGetUserById(id);
 
-//        if (userOptional.isPresent()) {
-//            return ResponseEntity.ok(userOptional.get());
-//        } else {
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-//        }
-//
 //        map ánh xạ optional hiện tại thành optional bọc giá trị đầu ra của hàm truyền vào
 //        Optional<User> thành Optional<ResponseEntity<User>>
 //        return userOptional.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
@@ -47,8 +41,6 @@ public class UserController {
     @GetMapping("/users")
     @ApiMessage(value = "Fetch all users with pagination")
     public ResponseEntity<PaginatedResultDTO> getAllUsers(@Filter Specification<User> spec, Pageable pageable) {
-//        Pageable pageable = PaginationHandler.getPageableObject(current, pageSize);
-//        var users = this.userService.fetchAllUsers(pageable);
         PaginatedResultDTO users = this.userService.handleGetAllUsers(spec, pageable);
         return ResponseEntity.ok(users);
     }

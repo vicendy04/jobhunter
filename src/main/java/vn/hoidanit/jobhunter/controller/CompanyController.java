@@ -11,6 +11,7 @@ import vn.hoidanit.jobhunter.domain.Company;
 import vn.hoidanit.jobhunter.domain.response.PaginatedResultDTO;
 import vn.hoidanit.jobhunter.service.CompanyService;
 import vn.hoidanit.jobhunter.util.annotation.ApiMessage;
+import vn.hoidanit.jobhunter.util.error.IdInvalidException;
 
 
 @RestController
@@ -56,7 +57,7 @@ public class CompanyController {
     }
 
     @DeleteMapping("/companies/{id}")
-    public ResponseEntity<Void> deleteCompany(@PathVariable("id") long id) {
+    public ResponseEntity<Void> deleteCompany(@PathVariable("id") long id) throws IdInvalidException {
         this.companyService.handleDeleteCompany(id);
 //        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("User deleted successfully");
         return ResponseEntity.ok(null);

@@ -5,17 +5,23 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import vn.hoidanit.jobhunter.domain.Company;
+import vn.hoidanit.jobhunter.domain.User;
 import vn.hoidanit.jobhunter.domain.response.PaginatedResultDTO;
 import vn.hoidanit.jobhunter.repository.CompanyRepository;
+import vn.hoidanit.jobhunter.repository.UserRepository;
+import vn.hoidanit.jobhunter.util.error.IdInvalidException;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
 public class CompanyService {
     private final CompanyRepository companyRepository;
+    private final UserRepository userRepository;
 
-    public CompanyService(CompanyRepository companyRepository) {
+    public CompanyService(CompanyRepository companyRepository, UserRepository userRepository) {
         this.companyRepository = companyRepository;
+        this.userRepository = userRepository;
     }
 
     public Company fetchCompanyById(long id) {
@@ -43,7 +49,11 @@ public class CompanyService {
         return paginatedResultDTO;
     }
 
-    public void handleDeleteCompany(long id) {
+    public void handleDeleteCompany(long id) throws IdInvalidException {
+        Company company = this.companyRepository.findById(id)
+                .orElseThrow(() -> new IdInvalidException("Không tồn tại công ty với id bạn nhập"));
+        List<User> users = this.userRepository.findByCompany(company);
+        this.userRepository.deleteAll(users);
         this.companyRepository.deleteById(id);
     }
 
