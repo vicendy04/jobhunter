@@ -14,6 +14,7 @@ import vn.hoidanit.jobhunter.util.annotation.ApiMessage;
 
 
 @RestController
+@RequestMapping("/api/v1")
 public class CompanyController {
     private final CompanyService companyService;
 
@@ -55,7 +56,7 @@ public class CompanyController {
     }
 
     @DeleteMapping("/companies/{id}")
-    public ResponseEntity<Void> deleteCompany(@PathVariable("id") Long id) {
+    public ResponseEntity<Void> deleteCompany(@PathVariable("id") long id) {
         this.companyService.handleDeleteCompany(id);
 //        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("User deleted successfully");
         return ResponseEntity.ok(null);

@@ -44,7 +44,7 @@ public class CompanyService {
         return paginatedResultDTO;
     }
 
-    public void handleDeleteCompany(Long id) {
+    public void handleDeleteCompany(long id) {
         this.companyRepository.deleteById(id);
     }
 
