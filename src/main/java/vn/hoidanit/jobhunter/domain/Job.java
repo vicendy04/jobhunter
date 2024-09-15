@@ -49,6 +49,7 @@ public class Job {
     private Company company;
 
     @ManyToMany(fetch = FetchType.LAZY)
+    // bỏ thuộc tính jobs trong skill
     @JsonIgnoreProperties(value = {"jobs"})
     // bảng chính là job. bảng invert tức phụ là skill
     @JoinTable(name = "job_skill", joinColumns = @JoinColumn(name = "job_id"), inverseJoinColumns = @JoinColumn(name = "skill_id"))
