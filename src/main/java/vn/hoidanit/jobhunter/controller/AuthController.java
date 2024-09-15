@@ -145,7 +145,7 @@ public class AuthController {
         // update refresh token == null
         this.userService.updateUserToken(null, email);
         ResponseCookie deletedCookie = ResponseCookie
-                .from("refresh_token", null)
+                .from("refresh_token", "")
                 .httpOnly(true)
                 .secure(true)
                 .path("/")

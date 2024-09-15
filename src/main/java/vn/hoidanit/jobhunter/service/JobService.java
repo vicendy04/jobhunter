@@ -103,7 +103,7 @@ public class JobService {
         dto.setUpdatedAt(currentJob.getUpdatedAt());
         dto.setUpdatedBy(currentJob.getUpdatedBy());
         if (currentJob.getSkills() != null) {
-            List<String> skills = currentJob.getSkills().stream().map(item -> item.getName()).collect(Collectors.toList());
+            List<String> skills = currentJob.getSkills().stream().map(Skill::getName).collect(Collectors.toList());
             dto.setSkills(skills);
         }
         return dto;
@@ -125,9 +125,8 @@ public class JobService {
 
     // Get a job by ID
     public Job getJobById(Long id) throws IdInvalidException {
-        Job j = jobRepository.findById(id)
+        return jobRepository.findById(id)
                 .orElseThrow(() -> new IdInvalidException("Job not found"));
-        return j;
     }
 
     public void deleteJob(Long id) throws IdInvalidException {
