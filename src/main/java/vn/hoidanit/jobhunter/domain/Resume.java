@@ -1,51 +1,44 @@
 package vn.hoidanit.jobhunter.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 import vn.hoidanit.jobhunter.util.SecurityUtil;
-import vn.hoidanit.jobhunter.util.constant.GenderEnum;
+import vn.hoidanit.jobhunter.util.constant.ResumeStateEnum;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.Optional;
 
 @Entity
-@Table(name = "users")
+@Table(name = "resumes")
 @Getter
 @Setter
-public class User {
+public class Resume {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private long id;
 
-    private String name;
-    @NotBlank(message = "email không được bỏ trống")
     private String email;
-    @NotBlank(message = "mật khẩu không được bỏ trống")
-    private String password;
 
-    private Integer age;
+    private String url;
 
     @Enumerated(EnumType.STRING)
-    private GenderEnum gender;
+    private ResumeStateEnum status;
 
-    private String address;
-    @Column(columnDefinition = "TEXT")
-    private String refreshToken;
     private Instant createdAt;
     private Instant updatedAt;
+
     private String createdBy;
     private String updatedBy;
-    @ManyToOne
-    @JoinColumn(name = "company_id")
-    private Company company;
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    @JsonIgnore
-    List<Resume> resumes;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "job_id")
+    private Job job;
+
     @PrePersist
     public void handleBeforeCreate() {
         Optional<String> currentUserLogin = SecurityUtil.getCurrentUserLogin();
@@ -61,4 +54,5 @@ public class User {
         this.setUpdatedBy(emailCurrentUser);
         this.setUpdatedAt(Instant.now());
     }
+
 }

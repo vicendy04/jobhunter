@@ -2,6 +2,7 @@ package vn.hoidanit.jobhunter.util;
 
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.core.MethodParameter;
+import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.server.ServerHttpRequest;
@@ -32,14 +33,9 @@ public class FormatRestResponse implements ResponseBodyAdvice<Object> {
         RestResponse<Object> restResponse = new RestResponse<>();
         restResponse.setStatusCode(status);
 
-//        if (status >= 400) {
-////            error case
-//            restResponse.setError("CALL API FAILED");
-//            restResponse.setMessage(body);
-//        }
-
 //        fix request refresh liên tục từ phía frontend
-        if (body instanceof String) {
+//        không format response của api download file
+        if (body instanceof String || body instanceof Resource) {
             return body;
         }
         // Nếu mã trạng thái là lỗi (>= 400), không cần định dạng lại
