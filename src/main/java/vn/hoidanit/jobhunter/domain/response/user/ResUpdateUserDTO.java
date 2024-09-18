@@ -20,6 +20,7 @@ public class ResUpdateUserDTO {
     private Integer age;
     private Instant updatedAt;
     private CompanyUser company;
+    private RoleUser role;
 
     @Getter
     @Setter
@@ -27,4 +28,14 @@ public class ResUpdateUserDTO {
         private long id;
         private String name;
     }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class RoleUser {
+        private long id;
+        private String name;
+    }
+
 }
