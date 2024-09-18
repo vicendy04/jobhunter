@@ -31,8 +31,8 @@ public class JobController {
         return ResponseEntity.ok(newJob);
     }
 
-    @ApiMessage("Update a job")
     @PutMapping()
+    @ApiMessage("Update a job")
     public ResponseEntity<ResUpdateJobDTO> updateJob(@Valid @RequestBody Job job) throws IdInvalidException {
         ResUpdateJobDTO updatedJob = this.jobService.updateJob(job);
         return ResponseEntity.ok(updatedJob);

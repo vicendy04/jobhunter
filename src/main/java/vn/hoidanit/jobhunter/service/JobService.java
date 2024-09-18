@@ -4,16 +4,19 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import vn.hoidanit.jobhunter.domain.Company;
 import vn.hoidanit.jobhunter.domain.Job;
 import vn.hoidanit.jobhunter.domain.Skill;
 import vn.hoidanit.jobhunter.domain.response.PaginatedResultDTO;
 import vn.hoidanit.jobhunter.domain.response.job.ResCreateJobDTO;
 import vn.hoidanit.jobhunter.domain.response.job.ResUpdateJobDTO;
+import vn.hoidanit.jobhunter.repository.CompanyRepository;
 import vn.hoidanit.jobhunter.repository.JobRepository;
 import vn.hoidanit.jobhunter.repository.SkillRepository;
 import vn.hoidanit.jobhunter.util.error.IdInvalidException;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,10 +25,13 @@ public class JobService {
     private final JobRepository jobRepository;
 
     private final SkillRepository skillRepository;
+    private final CompanyRepository companyRepository;
 
-    public JobService(JobRepository jobRepository, SkillRepository skillRepository) {
+
+    public JobService(JobRepository jobRepository, SkillRepository skillRepository, CompanyRepository companyRepository) {
         this.jobRepository = jobRepository;
         this.skillRepository = skillRepository;
+        this.companyRepository = companyRepository;
     }
 
     public ResCreateJobDTO createJob(Job job) {
@@ -36,6 +42,12 @@ public class JobService {
         List<Skill> dbSkills = this.skillRepository.findByIdIn(reqSkills);
         job.setSkills(dbSkills);
 
+        if (job.getCompany() != null) {
+            Optional<Company> companyOptional = this.companyRepository.findById(job.getCompany().getId());
+            if (companyOptional.isPresent()){
+                job.setCompany(companyOptional.get());
+            }
+        }
         Job currentJob = this.jobRepository.save(job);
 
         return this.convertToResCreateJobDTO(currentJob);
@@ -65,6 +77,19 @@ public class JobService {
         Job dbJob = jobRepository.findById(reqJob.getId())
                 .orElseThrow(() -> new IdInvalidException("Job not found"));
 
+        List<Skill> dbSkills = null;
+        if (reqJob.getSkills() != null) {
+            List<Long> reqSkillsIds = reqJob.getSkills().stream()
+                    .map(Skill::getId)
+                    .collect(Collectors.toList());
+            dbSkills = skillRepository.findByIdIn(reqSkillsIds);
+        }
+        dbJob.setSkills(dbSkills);
+        if (reqJob.getCompany() != null) {
+            Optional<Company> companyOptional = this.companyRepository.findById(reqJob.getCompany().getId());
+            companyOptional.ifPresent(dbJob::setCompany);
+        }
+
         dbJob.setName(reqJob.getName());
         dbJob.setLocation(reqJob.getLocation());
         dbJob.setSalary(reqJob.getSalary());
@@ -74,15 +99,6 @@ public class JobService {
         dbJob.setStartDate(reqJob.getStartDate());
         dbJob.setEndDate(reqJob.getEndDate());
         dbJob.setActive(reqJob.isActive());
-
-        List<Skill> dbSkills = null;
-        if (reqJob.getSkills() != null) {
-            List<Long> reqSkillsIds = reqJob.getSkills().stream()
-                    .map(Skill::getId)
-                    .collect(Collectors.toList());
-            dbSkills = skillRepository.findByIdIn(reqSkillsIds);
-        }
-        dbJob.setSkills(dbSkills);
 
         Job updatedJob = jobRepository.save(dbJob);
 

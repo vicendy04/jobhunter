@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import vn.hoidanit.jobhunter.domain.Job;
 import vn.hoidanit.jobhunter.domain.Resume;
 import vn.hoidanit.jobhunter.domain.User;
-import vn.hoidanit.jobhunter.domain.response.ResultPaginationDTO;
+import vn.hoidanit.jobhunter.domain.response.PaginatedResultDTO;
 import vn.hoidanit.jobhunter.domain.response.resume.ResCreateResumeDTO;
 import vn.hoidanit.jobhunter.domain.response.resume.ResFetchResumeDTO;
 import vn.hoidanit.jobhunter.domain.response.resume.ResUpdateResumeDTO;
@@ -71,20 +71,35 @@ public class ResumeService {
         return res;
     }
 
-    public ResUpdateResumeDTO update(Resume resume) {
+    public ResUpdateResumeDTO update(Resume reqResume) throws IdInvalidException {
+        // check id exist
+        Resume resume = fetchById(reqResume.getId()).orElseThrow(() -> new IdInvalidException("Resume với id = " + reqResume.getId() + " không tồn tại"));
+
+        resume.setStatus(reqResume.getStatus());
         resume = this.resumeRepository.save(resume);
+
         ResUpdateResumeDTO res = new ResUpdateResumeDTO();
         res.setUpdatedAt(resume.getUpdatedAt());
         res.setUpdatedBy(resume.getUpdatedBy());
         return res;
     }
 
-    public void delete(long id) {
+    public void delete(long id) throws IdInvalidException {
+        boolean exists = this.resumeRepository.existsById(id);
+        if (!exists) {
+            throw new IdInvalidException("Resume với id = " + id + " không tồn tại");
+        }
         this.resumeRepository.deleteById(id);
     }
 
-    public ResFetchResumeDTO getResume(Resume resume) {
+    public ResFetchResumeDTO getResume(long id) throws IdInvalidException {
+        Resume resume = fetchById(id).orElseThrow(() -> new IdInvalidException("Resume với id = " + id + " không tồn tại"));
+        return this.convertToResFetchResumeDTO(resume);
+    }
+
+    private ResFetchResumeDTO convertToResFetchResumeDTO(Resume resume) {
         ResFetchResumeDTO res = new ResFetchResumeDTO();
+
         res.setId(resume.getId());
         res.setEmail(resume.getEmail());
         res.setUrl(resume.getUrl());
@@ -94,30 +109,30 @@ public class ResumeService {
         res.setUpdatedAt(resume.getUpdatedAt());
         res.setUpdatedBy(resume.getUpdatedBy());
 
+        if (resume.getJob() != null) {
+            res.setCompanyName(resume.getJob().getCompany().getName());
+        }
+
         res.setUser(new ResFetchResumeDTO.UserResume(resume.getUser().getId(), resume.getUser().getName()));
         res.setJob(new ResFetchResumeDTO.JobResume(resume.getJob().getId(), resume.getJob().getName()));
 
         return res;
     }
 
-    public ResultPaginationDTO fetchAllResume(Specification<Resume> spec, Pageable pageable) {
+    public PaginatedResultDTO fetchAllResume(Specification<Resume> spec, Pageable pageable) {
         Page<Resume> pageUser = this.resumeRepository.findAll(spec, pageable);
-        ResultPaginationDTO rs = new ResultPaginationDTO();
-        ResultPaginationDTO.Meta mt = new ResultPaginationDTO.Meta();
-
+        PaginatedResultDTO rs = new PaginatedResultDTO();
+        PaginatedResultDTO.Meta mt = new PaginatedResultDTO.Meta();
         mt.setPage(pageable.getPageNumber() + 1);
         mt.setPageSize(pageable.getPageSize());
-
         mt.setPages(pageUser.getTotalPages());
         mt.setTotal(pageUser.getTotalElements());
-
         rs.setMeta(mt);
-
         // remove sensitive data
-        List<ResFetchResumeDTO> listResume = pageUser.getContent().stream().map(item -> this.getResume(item)).collect(Collectors.toList());
-
+        List<ResFetchResumeDTO> listResume = pageUser.getContent().stream()
+                .map(this::convertToResFetchResumeDTO)
+                .collect(Collectors.toList());
         rs.setResult(listResume);
-
         return rs;
     }
 }
