@@ -1,11 +1,13 @@
 package vn.hoidanit.jobhunter.controller;
 
+import com.turkraft.springfilter.boot.Filter;
 import jakarta.validation.Valid;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.hoidanit.jobhunter.domain.Role;
+import vn.hoidanit.jobhunter.domain.response.PaginatedResultDTO;
 import vn.hoidanit.jobhunter.service.RoleService;
 import vn.hoidanit.jobhunter.util.annotation.ApiMessage;
 import vn.hoidanit.jobhunter.util.error.IdInvalidException;
@@ -35,11 +37,19 @@ public class RoleController {
         return ResponseEntity.ok(updated);  // HTTP 200 OK
     }
 
+    @GetMapping("/roles/{id}")
+    @ApiMessage("Fetch role by Id")
+    public ResponseEntity<Role> getRoleById(@PathVariable("id") long id) throws IdInvalidException {
+        Role role = roleService.getRoleById(id);
+        return ResponseEntity.ok().body(role);
+    }
+
     @GetMapping("/roles")
-    @ApiMessage("Roles fetched successfully")
-    public ResponseEntity<Page<Role>> getRoles(Pageable pageable) {
-        Page<Role> roles = roleService.getRoles(pageable);
-        return ResponseEntity.ok(roles);  // HTTP 200 OK
+    @ApiMessage("Fetch roles")
+    public ResponseEntity<PaginatedResultDTO> getRoles(
+            @Filter Specification<Role> spec, Pageable pageable) {
+
+        return ResponseEntity.ok(this.roleService.getRoles(spec, pageable));
     }
 
     @DeleteMapping("/roles/{id}")

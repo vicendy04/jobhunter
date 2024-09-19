@@ -2,9 +2,11 @@ package vn.hoidanit.jobhunter.service;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import vn.hoidanit.jobhunter.domain.Permission;
 import vn.hoidanit.jobhunter.domain.Role;
+import vn.hoidanit.jobhunter.domain.response.PaginatedResultDTO;
 import vn.hoidanit.jobhunter.repository.PermissionRepository;
 import vn.hoidanit.jobhunter.repository.RoleRepository;
 import vn.hoidanit.jobhunter.util.error.IdInvalidException;
@@ -65,14 +67,30 @@ public class RoleService {
         return roleRepository.save(existingRole);
     }
 
-    public Page<Role> getRoles(Pageable pageable) {
-        return roleRepository.findAll(pageable);
-    }
+    public PaginatedResultDTO getRoles(Specification<Role> spec, Pageable pageable) {
+        Page<Role> pRole = this.roleRepository.findAll(spec, pageable);
+        PaginatedResultDTO rs = new PaginatedResultDTO();
+        PaginatedResultDTO.Meta mt = new PaginatedResultDTO.Meta();
 
+        mt.setPage(pageable.getPageNumber() + 1);
+        mt.setPageSize(pageable.getPageSize());
+
+        mt.setPages(pRole.getTotalPages());
+        mt.setTotal(pRole.getTotalElements());
+
+        rs.setMeta(mt);
+        rs.setResult(pRole.getContent());
+        return rs;
+    }
     public void deleteRole(long id) throws IdInvalidException {
         if (!roleRepository.existsById(id)) {
             throw new IdInvalidException("Role not found");
         }
         roleRepository.deleteById(id);
+    }
+
+    public Role getRoleById(long id) throws IdInvalidException {
+        return roleRepository.findById(id)
+                .orElseThrow(() -> new IdInvalidException("Role not found"));
     }
 }

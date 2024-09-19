@@ -42,7 +42,8 @@ public class SecurityConfiguration {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         String[] whiteList = {
                 "/",
-                "/api/v1/auth/login", "/api/v1/auth/refresh", "/storage/**",
+                "/api/v1/auth/login", "/api/v1/auth/refresh", "api/v1/auth/register",
+                "/storage/**",
                 "/api/v1/companies/**", "/api/v1/jobs/**"
         };
 //         @formatter:off

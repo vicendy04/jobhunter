@@ -194,4 +194,8 @@ public class UserService {
             this.userRepository.save(currentUser);
         }
     }
+
+    public boolean isEmailExist(String email) {
+        return this.userRepository.existsByEmail(email);
+    }
 }

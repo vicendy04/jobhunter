@@ -22,6 +22,11 @@ public class PermissionService {
         return this.permissionRepository.existsByApiPathAndMethodAndModule(permission.getApiPath(), permission.getMethod(), permission.getModule());
     }
 
+    private boolean isSameName(Permission p) throws IdInvalidException {
+        Permission existingPermission = permissionRepository.findById(p.getId()).orElseThrow(() -> new IdInvalidException("Permission not found"));
+        return p.getName().equals(existingPermission.getName());
+    }
+
     public Permission create(Permission permission) throws IdInvalidException {
         if (this.isPermissionExist(permission)) {
             throw new IdInvalidException("Trùng rồi");
@@ -30,12 +35,14 @@ public class PermissionService {
     }
 
     public Permission updatePermission(Permission reqPermission) throws IdInvalidException {
-        Permission existingPermission = permissionRepository.findById(reqPermission.getId()).orElseThrow(() -> new IdInvalidException("Permission not found"));
 
         if (this.isPermissionExist(reqPermission)) {
-            throw new IdInvalidException("Trùng rồi");
+            if (this.isSameName(reqPermission)) {
+                throw new IdInvalidException("Trùng rồi");
+            }
         }
 
+        Permission existingPermission = permissionRepository.findById(reqPermission.getId()).orElseThrow(() -> new IdInvalidException("Permission not found"));
         existingPermission.setName(reqPermission.getName());
         existingPermission.setApiPath(reqPermission.getApiPath());
         existingPermission.setMethod(reqPermission.getMethod());
