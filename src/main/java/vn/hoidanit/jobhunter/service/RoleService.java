@@ -45,9 +45,9 @@ public class RoleService {
     public Role updateRole(Role reqRole) throws IdInvalidException {
         Role existingRole = roleRepository.findById(reqRole.getId())
                 .orElseThrow(() -> new IdInvalidException("Role not found"));
-        if (roleRepository.existsByName(reqRole.getName())) {
-            throw new IdInvalidException("Role with the same name already exists.");
-        }
+//        if (roleRepository.existsByName(reqRole.getName())) {
+//            throw new IdInvalidException("Role with the same name already exists.");
+//        }
 
         List<Permission> dbPermissions = null;
         if (reqRole.getPermissions() != null) {

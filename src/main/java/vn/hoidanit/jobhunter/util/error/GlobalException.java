@@ -43,10 +43,7 @@ public class GlobalException {
         restResponse.setError("CALL API FAILED");
 
 //        restResponse.setMessage(exception.getFieldError().getDefaultMessage());
-        List<String> errorMessages = exception.getFieldErrors()
-                .stream()
-                .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                .toList();
+        List<String> errorMessages = exception.getFieldErrors().stream().map(DefaultMessageSourceResolvable::getDefaultMessage).toList();
         restResponse.setData(errorMessages);
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(restResponse);
@@ -60,5 +57,15 @@ public class GlobalException {
         restResponse.setMessage("Exception upload file...");
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(restResponse);
+    }
+
+    @ExceptionHandler(value = PermissionException.class)
+    public ResponseEntity<RestResponse<Object>> handlePermissionException(Exception exception) {
+        RestResponse<Object> restResponse = new RestResponse<>();
+        restResponse.setStatusCode(HttpStatus.FORBIDDEN.value());
+        restResponse.setError(exception.getMessage());
+        restResponse.setMessage("Forbidden");
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(restResponse);
     }
 }

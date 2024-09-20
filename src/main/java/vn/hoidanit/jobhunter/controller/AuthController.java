@@ -94,6 +94,7 @@ public class AuthController {
             userLogin.setId(currentUser.getId());
             userLogin.setName(currentUser.getName());
             userLogin.setEmail(currentUser.getEmail());
+            // ném role cho phía frontend
             userLogin.setRole(currentUser.getRole());
             userGetAccount.setUser(userLogin);
         }

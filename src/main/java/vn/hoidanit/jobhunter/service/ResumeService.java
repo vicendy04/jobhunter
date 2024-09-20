@@ -23,6 +23,7 @@ import vn.hoidanit.jobhunter.repository.UserRepository;
 import vn.hoidanit.jobhunter.util.SecurityUtil;
 import vn.hoidanit.jobhunter.util.error.IdInvalidException;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -33,25 +34,29 @@ public class ResumeService {
     FilterBuilder fb;
     @Autowired
     private FilterParser filterParser;
-    @Autowired
-    private FilterSpecificationConverter filterSpecificationConverter;
     private final ResumeRepository resumeRepository;
     private final UserRepository userRepository;
     private final JobRepository jobRepository;
+    private final UserService userService;
+    private final FilterBuilder filterBuilder;
+    private final FilterSpecificationConverter filterSpecificationConverter;
 
-    public ResumeService(ResumeRepository resumeRepository, UserRepository userRepository, JobRepository jobRepository) {
+    public ResumeService(ResumeRepository resumeRepository,
+                         UserRepository userRepository,
+                         JobRepository jobRepository,
+                         UserService userService,
+                         FilterBuilder filterBuilder,
+                         FilterSpecificationConverter filterSpecificationConverter) {
         this.resumeRepository = resumeRepository;
         this.userRepository = userRepository;
         this.jobRepository = jobRepository;
+        this.userService = userService;
+        this.filterBuilder = filterBuilder;
+        this.filterSpecificationConverter = filterSpecificationConverter;
     }
 
     public Optional<Resume> fetchById(long id) {
         return this.resumeRepository.findById(id);
-    }
-
-    public void handleGetResumeById(long id) throws IdInvalidException {
-        Resume resume = fetchById(id).orElseThrow(() -> new IdInvalidException("User with id " + id + " does not exist"));
-        return;
     }
 
     public boolean checkResumeExistByUserAndJob(Resume resume) {
@@ -129,6 +134,28 @@ public class ResumeService {
         res.setJob(new ResFetchResumeDTO.JobResume(resume.getJob().getId(), resume.getJob().getName()));
 
         return res;
+    }
+
+    public List<Long> getCurrentUserJobIds() {
+        String email = SecurityUtil.getCurrentUserLogin().orElse("");
+        User currentUser = this.userService.handleGetUserByUsername(email);
+
+        if (currentUser != null && currentUser.getCompany() != null) {
+            List<Job> jobs = currentUser.getCompany().getJobs();
+            if (jobs != null && !jobs.isEmpty()) {
+                return jobs.stream().map(Job::getId).collect(Collectors.toList());
+            }
+        }
+        return Collections.emptyList();
+    }
+
+    public Specification<Resume> buildJobSpecification(List<Long> jobIds, Specification<Resume> spec) {
+        if (jobIds != null && !jobIds.isEmpty()) {
+            Specification<Resume> jobInSpec = filterSpecificationConverter
+                    .convert(filterBuilder.field("job").in(filterBuilder.input(jobIds)).get());
+            return jobInSpec.and(spec);
+        }
+        return spec;
     }
 
     public PaginatedResultDTO fetchAllResume(Specification<Resume> spec, Pageable pageable) {
