@@ -36,11 +36,10 @@ public class PermissionService {
 
     public Permission updatePermission(Permission reqPermission) throws IdInvalidException {
 
-        if (this.isPermissionExist(reqPermission)) {
-            if (this.isSameName(reqPermission)) {
+        if (this.isPermissionExist(reqPermission) && this.isSameName(reqPermission)) {
                 throw new IdInvalidException("Trùng rồi");
             }
-        }
+
 
         Permission existingPermission = permissionRepository.findById(reqPermission.getId()).orElseThrow(() -> new IdInvalidException("Permission not found"));
         existingPermission.setName(reqPermission.getName());

@@ -68,9 +68,7 @@ public class ResumeService {
         // check job by id
         if (resume.getJob() == null) return false;
         Optional<Job> jobOptional = this.jobRepository.findById(resume.getJob().getId());
-        if (jobOptional.isEmpty()) return false;
-
-        return true;
+        return jobOptional.isPresent();
     }
 
     public ResCreateResumeDTO create(Resume resume) throws IdInvalidException {
@@ -143,7 +141,7 @@ public class ResumeService {
         if (currentUser != null && currentUser.getCompany() != null) {
             List<Job> jobs = currentUser.getCompany().getJobs();
             if (jobs != null && !jobs.isEmpty()) {
-                return jobs.stream().map(Job::getId).collect(Collectors.toList());
+                return jobs.stream().map(Job::getId).toList();
             }
         }
         return Collections.emptyList();

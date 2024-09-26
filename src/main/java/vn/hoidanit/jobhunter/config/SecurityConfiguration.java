@@ -45,7 +45,10 @@ public class SecurityConfiguration {
                 "/",
                 "/api/v1/auth/login", "/api/v1/auth/refresh", "api/v1/auth/register",
                 "/storage/**",
-                "/api/v1/companies/**", "/api/v1/jobs/**"
+                "/api/v1/companies/**", "/api/v1/jobs/**",
+                "/v3/api-docs/**",
+                "/swagger-ui/**",
+                "/swagger-ui.html"
         };
 //         @formatter:off
         http

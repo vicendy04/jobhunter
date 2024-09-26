@@ -33,6 +33,11 @@ public class FormatRestResponse implements ResponseBodyAdvice<Object> {
         RestResponse<Object> restResponse = new RestResponse<>();
         restResponse.setStatusCode(status);
 
+        String path = request.getURI().getPath();
+        if (path.startsWith("/v3/api-docs") || path.startsWith("/swagger-ui")) {
+            return body;
+        }
+
 //        fix request refresh liên tục từ phía frontend
 //        không format response của api download file
         if (body instanceof String || body instanceof Resource) {

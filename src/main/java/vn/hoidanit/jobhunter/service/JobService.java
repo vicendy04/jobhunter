@@ -17,7 +17,6 @@ import vn.hoidanit.jobhunter.util.error.IdInvalidException;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class JobService {
@@ -44,7 +43,7 @@ public class JobService {
 
         if (job.getCompany() != null) {
             Optional<Company> companyOptional = this.companyRepository.findById(job.getCompany().getId());
-            if (companyOptional.isPresent()){
+            if (companyOptional.isPresent()) {
                 job.setCompany(companyOptional.get());
             }
         }
@@ -81,7 +80,7 @@ public class JobService {
         if (reqJob.getSkills() != null) {
             List<Long> reqSkillsIds = reqJob.getSkills().stream()
                     .map(Skill::getId)
-                    .collect(Collectors.toList());
+                    .toList();
             dbSkills = skillRepository.findByIdIn(reqSkillsIds);
         }
         dbJob.setSkills(dbSkills);
@@ -119,7 +118,10 @@ public class JobService {
         dto.setUpdatedAt(currentJob.getUpdatedAt());
         dto.setUpdatedBy(currentJob.getUpdatedBy());
         if (currentJob.getSkills() != null) {
-            List<String> skills = currentJob.getSkills().stream().map(Skill::getName).collect(Collectors.toList());
+            List<String> skills = currentJob.getSkills()
+                    .stream()
+                    .map(Skill::getName)
+                    .toList();
             dto.setSkills(skills);
         }
         return dto;
